@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  password      String
+  accessLevel   Int
+  createdAt     DateTime
+  updatedAt     DateTime
+  tokens        Tokens[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Tokens {
+  id             String   @id
+  userId         String
+  expiresAt      DateTime
+  token          String
+  refreshToken   String
+  createdAt      DateTime
+  updatedAt      DateTime
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("tokens")
+}

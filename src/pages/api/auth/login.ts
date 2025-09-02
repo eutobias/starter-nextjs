@@ -1,12 +1,11 @@
-import { registerUser } from "@/features/auth/register/register.api";
-import { RegisterResponse } from "@/features/auth/register/register.types";
-import { PrismaClient } from "@/generated/prisma";
+import { loginUser } from "@/features/auth/login/login.api";
+import { LoginResponse } from "@/features/auth/login/login.types";
 import { HttpResponse, createHttpResponse } from "@/lib/http-service";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<HttpResponse<RegisterResponse>>
+  res: NextApiResponse<HttpResponse<LoginResponse>>
 ) {
   if (req.method !== "POST") {
     return createHttpResponse(res, {
@@ -14,7 +13,7 @@ export default async function handler(
     });
   }
 
-  await registerUser(req, res);
+  await loginUser(req, res);
 }
 
 export const config = {

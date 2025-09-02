@@ -9,6 +9,9 @@ export interface HttpConfig {
 
 export interface HttpResponse<T = any> {
   data?: T;
+  error?: {
+    message: string;
+  };
   status: number;
   statusText: string;
   headers?: any;

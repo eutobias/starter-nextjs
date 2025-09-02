@@ -1,15 +1,16 @@
-import { useState } from "react";
 import { useRouter } from "next/router";
-import { LoginFormData, LoginResponse } from "@/features/auth/login/login.types";
+import { LoginFormData } from "@/features/auth/login/login.types";
 import { Card } from "@/components/card.component";
 import { Title } from "@/components/title.component";
 import { InputField } from "@/components/input-field.component";
 import { useFormHandler } from "@/hooks/useFormHandler";
 import { Box } from "@/components/box.component";
 import { loginValidations } from "@/features/auth/login/login.validations";
+import { useLoginMutation } from "./login.hooks";
 
 export const LoginForm = () => {
   const router = useRouter();
+  const loginMutation = useLoginMutation();
 
   const {
     formData,
@@ -22,11 +23,9 @@ export const LoginForm = () => {
       password: "",
     },
   });
-  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
 
     try {
       const isValid = await validateForm(loginValidations);
@@ -34,28 +33,19 @@ export const LoginForm = () => {
         return;
       }
 
-      const response = await fetch("/api/auth/sign-in/email", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      loginMutation.mutate({
+        email: formData.email,
+        password: formData.password,
+      }, {
+        onSuccess: () => {
+          router.push('/');
         },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
+        onError: (error) => {
+          console.error('Login failed:', error);
+        }
       });
-
-      const data: LoginResponse = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error?.message || "Login failed");
-      }
-
-      // Success - redirect to dashboard
-      router.push("/");
-    } catch (err) {
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.error('Validation error:', error);
     }
   };
 
@@ -84,17 +74,17 @@ export const LoginForm = () => {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loginMutation.isPending}
             className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Signing In..." : "Sign In"}
+            {loginMutation.isPending ? "Signing In..." : "Sign In"}
           </button>
         </Box>
       </form>
 
       <p className="mt-4 text-center text-sm text-gray-600">
         Don't have an account?{" "}
-        <a href="/auth/signup" className="text-blue-600 hover:underline">
+        <a href="/auth/register" className="text-blue-600 hover:underline">
           Sign up
         </a>
       </p>
